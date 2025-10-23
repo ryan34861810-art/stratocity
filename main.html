@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>平流城 — 成員與團隊大事紀</title>
+  <style>
+    :root{
+      --accent:#0ea5a4;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f8fafc;
+      --glass: rgba(255,255,255,0.7);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial;
+    }
+    body{background:var(--bg); margin:0; color:#0f172a}
+    header{background:linear-gradient(90deg,var(--accent),#60a5fa); color:#fff; padding:28px 20px}
+    .container{max-width:1100px; margin:24px auto; padding:0 20px}
+    h1{margin:0; font-size:28px}
+    p.lead{margin:6px 0 0; opacity:.95}
+
+    /* 成員區 */
+    .grid{display:grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap:18px; margin-top:20px}
+    .card{background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(15,23,42,0.06);}
+    .avatar{width:100%; height:180px; object-fit:cover; display:block}
+    .meta{padding:12px}
+    .name{font-weight:700}
+    .role{font-size:13px; color:var(--muted); margin-top:4px}
+    .bio{margin-top:8px; font-size:13px; color:#111827}
+    .view-btn{margin-top:10px; display:inline-block; padding:6px 10px; border-radius:8px; background:var(--accent); color:#fff; text-decoration:none; font-size:13px}
+
+    /* timeline */
+    .timeline-wrap{background:linear-gradient(180deg,#fff, #f7fbff); padding:20px; border-radius:12px; margin-top:28px}
+    .timeline{position:relative; overflow:auto; white-space:nowrap; padding:20px 12px}
+    .line{position:relative; height:4px; background:#e6eef8; border-radius:6px; margin:40px 0}
+    .event{display:inline-block; width:240px; vertical-align:top; text-align:center; margin-right:18px}
+    .dot{width:18px; height:18px; border-radius:50%; background:var(--accent); display:inline-block; margin-bottom:8px}
+    .ev-date{font-size:13px; color:var(--muted)}
+    .ev-title{font-weight:700; margin-top:6px}
+    .ev-title a{color:inherit; text-decoration:none}
+
+    /* modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(2,6,23,0.5); display:none; align-items:center; justify-content:center; z-index:60}
+    .modal{background:#fff; width:92%; max-width:760px; border-radius:12px; padding:18px; box-shadow:0 20px 50px rgba(2,6,23,0.4)}
+    .modal h3{margin:0}
+    .close{position:absolute; right:14px; top:10px; background:none; border:0; font-size:20px}
+
+    /* responsive */
+    @media (max-width:640px){
+      .avatar{height:140px}
+      .event{width:220px}
+    }
+
+    /* small helper */
+    .muted{color:var(--muted)}
+    .flex{display:flex; gap:12px}
+    .tag{font-size:12px; background:#f0f9f9; padding:6px 8px; border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>平流城</h1>
+      <p class="lead">成員名錄與團隊大事紀 — 點選成員查看個人簡介，點選時間軸項目查看詳情。</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="members">
+      <h2>成員</h2>
+      <div class="grid" id="memberGrid">
+        <!-- 成員卡片由 JS 產生 -->
+      </div>
+    </section>
+
+    <section id="timelineSection">
+      <h2 style="margin-top:28px">團隊大事紀</h2>
+      <div class="timeline-wrap">
+        <div class="timeline" id="timelineContainer">
+          <!-- timeline items by JS -->
+          <div class="line" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal (single reusable) -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" id="modalContent">
+      <button class="close" id="modalClose" aria-label="關閉">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    /* -----------------------------
+       資料：把成員資料與時間軸資料放這裡
+       - 圖片路徑請放在 images/ 目錄，檔名對應 id
+       - 範例：images/akinq.jpg
+       ------------------------------*/
+
+    const members = [
+      {id:'akinq', name:'阿金 Mr. King', role:'主唱 / 創辦人', img:'images/akinq.jpg', bio:'阿金的個人簡介放這裡。可以寫成兩到三句，介紹他在團隊的職能、風格與聯絡方式（若願意）。'} ,
+      {id:'jinxdog', name:'JINXDOG', role:'吉他手', img:'images/jinxdog.jpg', bio:'JINXDOG 的簡短介紹。'},
+      {id:'mikey', name:'Mikey', role:'貝斯手', img:'images/mikey.jpg', bio:'Mikey 的簡短介紹。'},
+      {id:'wuby', name:'Wuby', role:'鼓手', img:'images/wuby.jpg', bio:'Wuby 的簡短介紹。'},
+      {id:'honda', name:'honda', role:'鍵盤', img:'images/honda.jpg', bio:'honda 的簡短介紹。'},
+      {id:'hazel27', name:'Hazel27', role:'製作人', img:'images/hazel27.jpg', bio:'Hazel27 的簡短介紹。'},
+      {id:'dingding', name:'丁丁', role:'編曲', img:'images/dingding.jpg', bio:'丁丁 的簡短介紹。'},
+      {id:'xiaoji', name:'小吉', role:'視覺設計', img:'images/xiaoji.jpg', bio:'小吉 的簡短介紹。'},
+      {id:'liyilin', name:'李以琳', role:'和聲', img:'images/liyilin.jpg', bio:'李以琳 的簡短介紹。'},
+      {id:'kraityx', name:'Kraityx', role:'音效', img:'images/kraityx.jpg', bio:'Kraityx 的簡短介紹。'},
+      {id:'kouky', name:'Kouky', role:'影片', img:'images/kouky.jpg', bio:'Kouky 的簡短介紹。'},
+      {id:'fairyray', name:'Fairy Ray', role:'製作助理', img:'images/fairyray.jpg', bio:'Fairy Ray 的簡短介紹。'},
+      {id:'hyper', name:'Hyper', role:'程式 / 網站', img:'images/hyper.jpg', bio:'Hyper 的簡短介紹。'},
+      {id:'theskavenger', name:'The sKavenger', role:'採樣', img:'images/theskavenger.jpg', bio:'The sKavenger 的簡短介紹。'},
+      {id:'itsw3n', name:'ITS W3N', role:'企劃', img:'images/itsw3n.jpg', bio:'ITS W3N 的簡短介紹。'},
+      {id:'saiko', name:'Saiko', role:'舞台設計', img:'images/saiko.jpg', bio:'Saiko 的簡短介紹。'},
+      {id:'orang', name:'Oran G', role:'嘉賓', img:'images/orang.jpg', bio:'Oran G 的簡短介紹。'},
+      {id:'soma', name:'Soma', role:'聯絡人', img:'images/soma.jpg', bio:'Soma 的簡短介紹。'},
+      {id:'zhao', name:'昭', role:'支援', img:'images/zhao.jpg', bio:'昭 的簡短介紹。'},
+      {id:'kuitoudao', name:'鬼頭刀', role:'聲音設計', img:'images/kuitoudao.jpg', bio:'鬼頭刀 的簡短介紹。'},
+  {id:'sthd', name:'生菜海膽 STHD', role:'合作者', img:'images/sthd.jpg', bio:'生菜海膽 STHD 的簡短介紹。'},
+  {id:'kuan', name:'寬平', role:'合作者', img:'images/kuan.jpg', bio:'寬平 的簡短介紹。'},
+  {id:'soley', name:'Soley', role:'合作者', img:'images/soley.jpg', bio:'Soley 的簡短介紹。'}
+];
+
+    const timeline = [
+      {id:'t1', date:'2022-03-12', title:'平流城正式成立', content:'平流城於 2022 年 3 月 12 日正式成立，成員聚集並開始共同創作。'},
+      {id:'t2', date:'2022-09-05', title:'發行第一張單曲', content:'推出首支單曲並在各大平台上架，獲得媒體關注。'},
+      {id:'t3', date:'2023-06-18', title:'大型演出：信義公園', content:'平流城在信義公園舉辦大型戶外演唱會，票券全數售罄。'},
+      {id:'t4', date:'2024-02-20', title:'巡迴首站：台南', content:'首場巡迴演唱會在台南開跑，反應熱烈。'},
+      {id:'t5', date:'2025-04-01', title:'跨國合作企劃', content:'與國外音樂團隊合作，推出跨國單曲與 MV。'}
+    ];
+
+    /* -----------------------------
+       產生成員卡片
+       ------------------------------*/
+    const memberGrid = document.getElementById('memberGrid');
+    members.forEach(m => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <img class="avatar" src="${m.img}" alt="${m.name}">
+        <div class="meta">
+          <div class="name">${m.name}</div>
+          <div class="role">${m.role}</div>
+          <div class="bio">${m.bio.substring(0,90)}${m.bio.length>90? '...':''}</div>
+          <a href="#" class="view-btn" data-id="${m.id}">查看個人檔案</a>
+        </div>
+      `;
+      memberGrid.appendChild(card);
+    });
+
+    /* -----------------------------
+       產生時間軸項目（水平滾動）
+       每個項目可以點擊打開 modal
+       ------------------------------*/
+    const timelineContainer = document.getElementById('timelineContainer');
+    timeline.forEach(ev => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'event';
+      // format date to YYYY-MM-DD -> nicer label
+      const d = new Date(ev.date);
+      const label = d.toLocaleDateString('zh-TW', {year:'numeric', month:'2-digit', day:'2-digit'});
+      wrapper.innerHTML = `
+        <div class="dot" aria-hidden="true"></div>
+        <div class="ev-date">${label}</div>
+        <div class="ev-title"><a href="#" data-tid="${ev.id}">${ev.title}</a></div>
+      `;
+      timelineContainer.appendChild(wrapper);
+    });
+
+    /* -----------------------------
+       Modal 控制
+       ------------------------------*/
+    const backdrop = document.getElementById('modalBackdrop');
+    const modalBody = document.getElementById('modalBody');
+    const closeBtn = document.getElementById('modalClose');
+
+    function openModal(html){
+      modalBody.innerHTML = html;
+      backdrop.style.display = 'flex';
+      // trap focus simple
+      closeBtn.focus();
+    }
+    function closeModal(){
+      backdrop.style.display = 'none';
+      modalBody.innerHTML = '';
+    }
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', function(e){ if(e.target===backdrop) closeModal(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+    // 成員按鈕
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        const id = this.dataset.id;
+        const member = members.find(m=>m.id===id);
+        if(!member) return;
+        const html = `
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <img src="${member.img}" alt="${member.name}" style="width:140px; height:140px; object-fit:cover; border-radius:8px;">
+            <div>
+              <h3>${member.name}</h3>
+              <div class="muted">${member.role}</div>
+              <p style="margin-top:12px">${member.bio}</p>
+            </div>
+          </div>
+        `;
+        openModal(html);
+      });
+    });
+
+    // 時間軸按鈕
+    document.querySelectorAll('#timelineContainer a').forEach(a=>{
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        const id = this.dataset.tid;
+        const ev = timeline.find(t=>t.id===id);
+        if(!ev) return;
+        const html = `
+          <h3>${ev.title}</h3>
+          <div class="muted">${new Date(ev.date).toLocaleDateString('zh-TW', {year:'numeric',month:'short',day:'numeric'})}</div>
+          <p style="margin-top:12px">${ev.content}</p>
+        `;
+        openModal(html);
+      });
+    });
+
+    /* -----------------------------
+       小提示：
+       - 若要新增成員或修改簡介，只要編輯上方 members 陣列
+       - 圖片預設放 images/<id>.jpg
+       - 若希望時間軸依日期排序，可在 timeline 陣列呼叫 sort
+       ------------------------------*/
+  </script>
+</body>
+</html>
